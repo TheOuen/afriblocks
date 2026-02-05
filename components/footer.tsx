@@ -1,6 +1,24 @@
 "use client"
 import { motion } from "framer-motion"
-import { Instagram, Twitter, Youtube, Blocks } from "lucide-react"
+import { Instagram, Twitter, Youtube } from "lucide-react"
+
+// Custom AfriBlocks Logo
+function AfriBlocksLogo({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 40 40" className={className} fill="none">
+      <rect x="8" y="24" width="12" height="8" rx="1" fill="#D97706" />
+      <rect x="20" y="24" width="12" height="8" rx="1" fill="#B45309" />
+      <rect x="14" y="16" width="12" height="8" rx="1" fill="#16A34A" />
+      <rect x="11" y="8" width="8" height="8" rx="1" fill="#F59E0B" />
+      <rect x="19" y="8" width="8" height="8" rx="1" fill="#DC2626" />
+      <circle cx="14" cy="28" r="1.5" fill="#FCD34D" />
+      <circle cx="26" cy="28" r="1.5" fill="#92400E" />
+      <circle cx="20" cy="20" r="1.5" fill="#22C55E" />
+      <circle cx="15" cy="12" r="1.5" fill="#FBBF24" />
+      <circle cx="23" cy="12" r="1.5" fill="#EF4444" />
+    </svg>
+  )
+}
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -8,20 +26,20 @@ export function Footer() {
   const footerLinks = {
     "Create": [
       { name: "Start Building", href: "#builder" },
-      { name: "Featured Creations", href: "#featured" },
+      { name: "Daily Challenge", href: "#challenge" },
       { name: "Building Tips", href: "#" },
-      { name: "Inspiration Gallery", href: "#" },
+      { name: "Inspiration Gallery", href: "#gallery" },
     ],
     "Community": [
       { name: "Leaderboard", href: "#" },
-      { name: "Challenges", href: "#" },
-      { name: "Events", href: "#" },
-      { name: "Forums", href: "#" },
+      { name: "Past Winners", href: "#" },
+      { name: "Share Your Build", href: "#" },
+      { name: "African Builders", href: "#" },
     ],
     "About": [
-      { name: "Our Story", href: "#" },
-      { name: "Team", href: "#" },
-      { name: "Prizes", href: "#" },
+      { name: "Our Mission", href: "#" },
+      { name: "Prize Info", href: "#" },
+      { name: "FAQ", href: "#" },
       { name: "Contact", href: "#" },
     ],
   }
@@ -33,7 +51,7 @@ export function Footer() {
   ]
 
   return (
-    <footer className="bg-gradient-to-b from-gray-800 to-gray-900 text-white">
+    <footer className="bg-gradient-to-b from-amber-900 to-amber-950 text-white">
       <div className="container-custom py-16 lg:py-20">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 mb-12">
@@ -46,18 +64,18 @@ export function Footer() {
               viewport={{ once: true }}
             >
               <div className="flex items-center gap-2 mb-4">
-                <Blocks className="w-8 h-8 text-red-500" />
-                <h3 className="text-2xl font-bold">BrickDreams</h3>
+                <AfriBlocksLogo className="w-10 h-10" />
+                <h3 className="text-2xl font-bold">AfriBlocks</h3>
               </div>
-              <p className="text-gray-400 mb-6 leading-relaxed">
-                Build your dreams, one block at a time. Create amazing LEGO masterpieces, share with the world, and celebrate creativity!
+              <p className="text-amber-200/70 mb-6 leading-relaxed">
+                Build Africa, one block at a time. Create amazing builds, compete in daily challenges, and celebrate African creativity with builders across the continent!
               </p>
               <div className="flex space-x-4">
                 {socialLinks.map((social) => (
                   <motion.a
                     key={social.name}
                     href={social.href}
-                    className="w-10 h-10 bg-red-500/10 rounded-full flex items-center justify-center text-red-400 hover:text-white hover:bg-red-500/20 transition-all duration-200"
+                    className="w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-400 hover:text-white hover:bg-amber-500/20 transition-all duration-200"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -86,7 +104,7 @@ export function Footer() {
                       <li key={link.name}>
                         <a
                           href={link.href}
-                          className="text-gray-400 hover:text-white transition-colors duration-200"
+                          className="text-amber-200/70 hover:text-white transition-colors duration-200"
                         >
                           {link.name}
                         </a>
@@ -99,12 +117,12 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Decorative element */}
+        {/* Decorative African-inspired pattern */}
         <div className="flex justify-center mb-8">
           <svg width="200" height="20" viewBox="0 0 200 20" className="opacity-30">
             <pattern id="footerPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <path d="M0,10 L5,0 L10,10 L5,20 Z" fill="#C91A09" />
-              <path d="M10,10 L15,0 L20,10 L15,20 Z" fill="#0055BF" />
+              <path d="M0,10 L5,0 L10,10 L5,20 Z" fill="#D97706" />
+              <path d="M10,10 L15,0 L20,10 L15,20 Z" fill="#16A34A" />
             </pattern>
             <rect width="200" height="20" fill="url(#footerPattern)" />
           </svg>
@@ -112,14 +130,14 @@ export function Footer() {
 
         {/* Bottom Section */}
         <motion.div
-          className="pt-8 border-t border-gray-700 flex justify-center items-center"
+          className="pt-8 border-t border-amber-800 flex justify-center items-center"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
           viewport={{ once: true }}
         >
-          <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-gray-500 text-center">
-            <p>&copy; {currentYear} BrickDreams. All rights reserved.</p>
+          <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm text-amber-300/60 text-center">
+            <p>&copy; {currentYear} AfriBlocks. All rights reserved.</p>
             <div className="flex space-x-6">
               <a href="#" className="hover:text-white transition-colors">
                 Privacy

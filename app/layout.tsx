@@ -10,19 +10,19 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "BrickDreams — Build Your Future One Block at a Time",
-  description: "Create amazing LEGO creations, share them with the world, and vote for your favorites!",
+  title: "AfriBlocks — Build Africa, One Block at a Time",
+  description: "Create stunning African-inspired builds, compete in daily challenges, vote for your favorites, and win real prizes!",
   openGraph: {
-    siteName: "BrickDreams",
-    title: "Build Your Future One Block at a Time | BrickDreams",
-    description: "Create amazing LEGO creations, share them with the world, and vote for your favorites!",
+    siteName: "AfriBlocks",
+    title: "Build Africa, One Block at a Time | AfriBlocks",
+    description: "Create stunning African-inspired builds, compete in daily challenges, vote for your favorites, and win real prizes!",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Build Your Future One Block at a Time | BrickDreams",
-    description: "Create amazing LEGO creations, share them with the world, and vote for your favorites!",
+    title: "Build Africa, One Block at a Time | AfriBlocks",
+    description: "Create stunning African-inspired builds, compete in daily challenges, vote for your favorites, and win real prizes!",
   },
 }
 

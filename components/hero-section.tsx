@@ -2,18 +2,18 @@
 
 import { motion } from "framer-motion"
 import { useRef, useEffect, useState } from "react"
-import { Blocks, ChevronDown } from "lucide-react"
+import { ChevronDown, Trophy, Sparkles } from "lucide-react"
 
-// Standard LEGO brick colors
+// African-inspired warm color palette
 const BRICK_COLORS = [
-  "#C91A09", // red
-  "#0055BF", // blue
-  "#F2CD37", // yellow
-  "#237841", // green
-  "#FE8A18", // orange
-  "#81007B", // purple
-  "#00BCD4", // cyan
-  "#BBE90B", // lime
+  "#D97706", // Amber/Sunset
+  "#B45309", // Earth Brown
+  "#16A34A", // Safari Green
+  "#DC2626", // Maasai Red
+  "#F59E0B", // Gold
+  "#92400E", // Deep Earth
+  "#EAB308", // Savanna Yellow
+  "#7C2D12", // Rich Brown
 ]
 
 interface FallingBrick {
@@ -49,13 +49,9 @@ function LegoBrickSVG({ color, size, className = "" }: { color: string; size: st
   if (size === "1x1") {
     return (
       <svg viewBox="0 0 40 48" className={className} style={{ filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.3))" }}>
-        {/* Top face */}
         <polygon points="20,4 38,14 20,24 2,14" fill={light} />
-        {/* Left face */}
         <polygon points="2,14 20,24 20,44 2,34" fill={dark} />
-        {/* Right face */}
         <polygon points="38,14 20,24 20,44 38,34" fill={color} />
-        {/* Stud */}
         <ellipse cx="20" cy="10" rx="6" ry="3" fill={color} />
         <ellipse cx="20" cy="8" rx="6" ry="3" fill={light} />
       </svg>
@@ -65,13 +61,9 @@ function LegoBrickSVG({ color, size, className = "" }: { color: string; size: st
   if (size === "1x2") {
     return (
       <svg viewBox="0 0 60 52" className={className} style={{ filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.3))" }}>
-        {/* Top face */}
         <polygon points="30,4 56,17 30,30 4,17" fill={light} />
-        {/* Left face */}
         <polygon points="4,17 30,30 30,48 4,35" fill={dark} />
-        {/* Right face */}
         <polygon points="56,17 30,30 30,48 56,35" fill={color} />
-        {/* Studs */}
         <ellipse cx="22" cy="12" rx="5" ry="2.5" fill={color} />
         <ellipse cx="22" cy="10" rx="5" ry="2.5" fill={light} />
         <ellipse cx="38" cy="12" rx="5" ry="2.5" fill={color} />
@@ -83,13 +75,9 @@ function LegoBrickSVG({ color, size, className = "" }: { color: string; size: st
   // 2x2
   return (
     <svg viewBox="0 0 70 56" className={className} style={{ filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.3))" }}>
-      {/* Top face */}
       <polygon points="35,4 66,20 35,36 4,20" fill={light} />
-      {/* Left face */}
       <polygon points="4,20 35,36 35,52 4,36" fill={dark} />
-      {/* Right face */}
       <polygon points="66,20 35,36 35,52 66,36" fill={color} />
-      {/* Studs */}
       <ellipse cx="25" cy="14" rx="5" ry="2.5" fill={color} />
       <ellipse cx="25" cy="12" rx="5" ry="2.5" fill={light} />
       <ellipse cx="45" cy="14" rx="5" ry="2.5" fill={color} />
@@ -102,23 +90,79 @@ function LegoBrickSVG({ color, size, className = "" }: { color: string; size: st
   )
 }
 
+// African landscape silhouette
+function AfricanLandscape() {
+  return (
+    <div className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none">
+      <svg viewBox="0 0 1440 200" preserveAspectRatio="none" className="w-full h-full">
+        {/* Background mountains/hills */}
+        <path
+          d="M0,200 L0,140 Q100,100 200,130 Q350,80 500,120 Q650,70 800,110 Q950,60 1100,100 Q1250,70 1350,90 Q1400,80 1440,100 L1440,200 Z"
+          fill="#78350F"
+          opacity="0.3"
+        />
+        {/* Acacia trees silhouette */}
+        <g fill="#451A03" opacity="0.6">
+          {/* Tree 1 */}
+          <rect x="150" y="140" width="4" height="40" />
+          <ellipse cx="152" cy="130" rx="25" ry="12" />
+          {/* Tree 2 */}
+          <rect x="400" y="150" width="3" height="30" />
+          <ellipse cx="401" cy="142" rx="20" ry="10" />
+          {/* Tree 3 */}
+          <rect x="750" y="135" width="5" height="45" />
+          <ellipse cx="752" cy="125" rx="30" ry="14" />
+          {/* Tree 4 */}
+          <rect x="1100" y="145" width="4" height="35" />
+          <ellipse cx="1102" cy="137" rx="22" ry="11" />
+          {/* Tree 5 */}
+          <rect x="1300" y="155" width="3" height="25" />
+          <ellipse cx="1301" cy="148" rx="18" ry="9" />
+        </g>
+        {/* Foreground savanna */}
+        <path
+          d="M0,200 L0,170 Q200,150 400,165 Q600,145 800,160 Q1000,140 1200,155 Q1350,145 1440,160 L1440,200 Z"
+          fill="#92400E"
+          opacity="0.4"
+        />
+      </svg>
+    </div>
+  )
+}
+
+// Sun/Moon element
+function AfricanSun() {
+  return (
+    <motion.div
+      className="absolute top-20 right-[15%] w-32 h-32 md:w-40 md:h-40"
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 1, delay: 0.5 }}
+    >
+      <div className="relative w-full h-full">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-300 via-orange-400 to-red-500 blur-xl opacity-60" />
+        <div className="absolute inset-4 rounded-full bg-gradient-to-br from-yellow-200 via-orange-300 to-orange-500" />
+      </div>
+    </motion.div>
+  )
+}
+
 export function HeroSection() {
   const [bricks, setBricks] = useState<FallingBrick[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Generate falling bricks
     const sizes: ("1x1" | "1x2" | "2x2")[] = ["1x1", "1x2", "2x2"]
     const newBricks: FallingBrick[] = []
 
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 18; i++) {
       newBricks.push({
         id: i,
         x: Math.random() * 100,
         color: BRICK_COLORS[Math.floor(Math.random() * BRICK_COLORS.length)],
         size: sizes[Math.floor(Math.random() * sizes.length)],
         delay: Math.random() * 8,
-        duration: 8 + Math.random() * 6,
+        duration: 10 + Math.random() * 6,
         rotation: Math.random() * 40 - 20,
       })
     }
@@ -127,13 +171,19 @@ export function HeroSection() {
   }, [])
 
   return (
-    <section ref={containerRef} className="relative h-screen overflow-hidden bg-gradient-to-b from-yellow-50 via-red-50 to-blue-50">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-10">
+    <section ref={containerRef} className="relative h-screen overflow-hidden bg-gradient-to-b from-amber-100 via-orange-200 to-amber-300">
+      {/* African-inspired pattern overlay */}
+      <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C91A09' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2378350F' fill-opacity='0.8'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />
       </div>
+
+      {/* African Sun */}
+      <AfricanSun />
+
+      {/* African Landscape silhouette */}
+      <AfricanLandscape />
 
       {/* Falling LEGO bricks */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -174,43 +224,44 @@ export function HeroSection() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center max-w-4xl"
         >
-          {/* Logo */}
+          {/* Badge */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl mb-8 shadow-lg"
+            className="inline-flex items-center gap-2 bg-amber-900/20 backdrop-blur-sm rounded-full px-4 py-2 text-amber-900 text-sm font-medium mb-6"
           >
-            <Blocks className="w-10 h-10 text-white" />
+            <Sparkles className="w-4 h-4" />
+            Celebrating African Creativity
           </motion.div>
 
           {/* Headline */}
           <motion.h1
-            className="text-5xl md:text-7xl lg:text-8xl font-black text-gray-800 tracking-tight mb-6"
+            className="text-5xl md:text-7xl lg:text-8xl font-black text-amber-900 tracking-tight mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            Build Your Dreams
+            Build Africa
           </motion.h1>
 
           <motion.p
-            className="text-2xl md:text-3xl lg:text-4xl font-light text-red-600 mb-8"
+            className="text-2xl md:text-3xl lg:text-4xl font-light text-orange-700 mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            One Brick at a Time
+            One Block at a Time
           </motion.p>
 
           <motion.p
-            className="text-lg text-gray-600 max-w-2xl mx-auto mb-12"
+            className="text-lg text-amber-800/80 max-w-2xl mx-auto mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
           >
-            Join our creative community. Build stunning LEGO creations,
-            compete in weekly challenges, and win amazing prizes.
+            Join our creative community. Build stunning African-inspired creations,
+            compete in daily challenges, and win amazing prizes including real building sets!
           </motion.p>
 
           {/* CTAs */}
@@ -222,16 +273,28 @@ export function HeroSection() {
           >
             <a
               href="#challenge"
-              className="px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-500/30"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold rounded-xl hover:from-amber-700 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/30"
             >
-              See This Week's Challenge
+              <Trophy className="w-5 h-5" />
+              Today's Challenge
             </a>
             <a
               href="#builder"
-              className="px-8 py-4 bg-gray-800 text-white font-bold rounded-xl hover:bg-gray-900 transition-colors"
+              className="px-8 py-4 bg-amber-900 text-white font-bold rounded-xl hover:bg-amber-800 transition-colors"
             >
               Start Building
             </a>
+          </motion.div>
+
+          {/* Prize callout */}
+          <motion.div
+            className="mt-8 inline-flex items-center gap-2 text-amber-700 text-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+          >
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            Winners entered to win real building sets!
           </motion.div>
         </motion.div>
 
@@ -246,7 +309,7 @@ export function HeroSection() {
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >
-            <ChevronDown className="w-8 h-8 text-red-500" />
+            <ChevronDown className="w-8 h-8 text-amber-700" />
           </motion.div>
         </motion.div>
       </div>

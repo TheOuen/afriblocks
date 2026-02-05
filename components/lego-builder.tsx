@@ -389,8 +389,8 @@ function PaletteBrick({
       }}
       className={`relative rounded-xl transition-all ${
         remaining > 0
-          ? "bg-white border-2 border-gray-200 hover:border-red-400 hover:shadow-lg cursor-grab active:cursor-grabbing"
-          : "bg-gray-100 border-2 border-gray-100 opacity-40 cursor-not-allowed"
+          ? "bg-white border-2 border-amber-200 hover:border-amber-400 hover:shadow-lg cursor-grab active:cursor-grabbing"
+          : "bg-amber-50 border-2 border-amber-100 opacity-40 cursor-not-allowed"
       }`}
       style={{ padding: '8px' }}
     >
@@ -398,7 +398,7 @@ function PaletteBrick({
         <IsometricBrickPreview color={color} size={size} />
       </div>
       <div className="text-center mt-1">
-        <span className="text-xs font-bold text-gray-800">{size}</span>
+        <span className="text-xs font-bold text-amber-900">{size}</span>
         <span className={`text-xs ml-1 ${remaining > 0 ? 'text-green-600' : 'text-red-600'}`}>
           ({remaining})
         </span>
@@ -423,13 +423,13 @@ function ColorPicker({
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="absolute z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 p-5"
+      className="absolute z-50 bg-white rounded-2xl shadow-2xl border border-amber-200 p-5"
       style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h4 className="font-bold text-gray-800 text-lg">Change Color</h4>
-        <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg">
-          <X className="w-5 h-5 text-gray-600" />
+        <h4 className="font-bold text-amber-900 text-lg">Change Color</h4>
+        <button onClick={onClose} className="p-1.5 hover:bg-amber-100 rounded-lg">
+          <X className="w-5 h-5 text-amber-600" />
         </button>
       </div>
       <div className="grid grid-cols-4 gap-3">
@@ -441,7 +441,7 @@ function ColorPicker({
               key={color}
               onClick={() => onSelect(color)}
               className={`w-12 h-12 rounded-xl transition-all ${
-                currentColor === color ? "ring-4 ring-red-500 scale-110" : "hover:scale-110"
+                currentColor === color ? "ring-4 ring-amber-500 scale-110" : "hover:scale-110"
               }`}
               style={{
                 background: `linear-gradient(135deg, ${c.light} 0%, ${c.main} 50%, ${c.dark} 100%)`,
@@ -597,7 +597,7 @@ export function LegoBuilder() {
   const selectedBrick = bricks.find((b) => b.id === selectedBrickId)
 
   return (
-    <section id="builder" className="py-16 bg-gradient-to-b from-gray-50 to-white">
+    <section id="builder" className="py-16 bg-gradient-to-b from-amber-50 to-white">
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -605,11 +605,11 @@ export function LegoBuilder() {
           viewport={{ once: true }}
           className="text-center mb-8"
         >
-          <h2 className="text-3xl md:text-4xl font-black text-gray-800 mb-3">
+          <h2 className="text-3xl md:text-4xl font-black text-amber-900 mb-3">
             Build Your Creation
           </h2>
-          <p className="text-gray-600 max-w-xl mx-auto">
-            Click a brick size, then click on the baseplate to place it. Or drag and drop!
+          <p className="text-amber-700/70 max-w-xl mx-auto">
+            Select a color and brick size, then tap the baseplate to place. Rotate the view by dragging!
           </p>
         </motion.div>
 
@@ -619,21 +619,21 @@ export function LegoBuilder() {
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="lg:w-80 bg-white rounded-2xl shadow-xl border border-gray-200 p-6"
+            className="lg:w-80 bg-white rounded-2xl shadow-xl border border-amber-200 p-6"
           >
-            <h3 className="font-bold text-gray-800 text-lg mb-4">Brick Palette</h3>
+            <h3 className="font-bold text-amber-900 text-lg mb-4">Brick Palette</h3>
 
-            <div className="flex items-center gap-3 mb-5 p-3 bg-gradient-to-r from-green-100 to-blue-100 rounded-xl border border-green-200">
-              <Gift className="w-6 h-6 text-green-500" />
+            <div className="flex items-center gap-3 mb-5 p-3 bg-gradient-to-r from-amber-100 to-orange-100 rounded-xl border border-amber-200">
+              <Gift className="w-6 h-6 text-amber-600" />
               <div>
-                <p className="text-sm font-bold text-green-800">+5 bonus bricks</p>
-                <p className="text-xs text-green-600">From community votes!</p>
+                <p className="text-sm font-bold text-amber-800">+5 bonus bricks</p>
+                <p className="text-xs text-amber-600">From community votes!</p>
               </div>
             </div>
 
             {/* Color selector */}
             <div className="mb-5">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">
+              <label className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3 block">
                 1. Choose Color
               </label>
               <div className="flex flex-wrap gap-2">
@@ -646,7 +646,7 @@ export function LegoBuilder() {
                       onClick={() => setSelectedColor(color)}
                       className={`w-9 h-9 rounded-lg transition-all ${
                         selectedColor === color
-                          ? "ring-3 ring-offset-2 ring-red-500 scale-110"
+                          ? "ring-3 ring-offset-2 ring-amber-500 scale-110"
                           : "hover:scale-105"
                       }`}
                       style={{
@@ -662,8 +662,8 @@ export function LegoBuilder() {
 
             {/* Brick sizes */}
             <div className="mb-5">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">
-                2. Select & Click to Place
+              <label className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3 block">
+                2. Select & Tap to Place
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {AVAILABLE_SIZES.map((size) => (
@@ -681,13 +681,13 @@ export function LegoBuilder() {
 
             {/* Pending placement indicator */}
             {pendingDrop && (
-              <div className="mb-4 p-3 bg-blue-100 rounded-xl border border-blue-300">
-                <p className="text-sm font-semibold text-blue-800">
-                  Click on baseplate to place {pendingDrop.size} {pendingDrop.color} brick
+              <div className="mb-4 p-3 bg-amber-100 rounded-xl border border-amber-300">
+                <p className="text-sm font-semibold text-amber-800">
+                  Tap on baseplate to place {pendingDrop.size} {pendingDrop.color} brick
                 </p>
                 <button
                   onClick={() => setPendingDrop(null)}
-                  className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
+                  className="mt-2 text-xs text-amber-600 hover:text-amber-800 underline"
                 >
                   Cancel
                 </button>
@@ -695,11 +695,11 @@ export function LegoBuilder() {
             )}
 
             {/* Actions */}
-            <div className="pt-4 border-t border-gray-200 space-y-2">
+            <div className="pt-4 border-t border-amber-200 space-y-2">
               <button
                 onClick={() => setBricks((prev) => prev.slice(0, -1))}
                 disabled={bricks.length === 0}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50 font-semibold text-sm"
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-amber-100 text-amber-700 rounded-xl hover:bg-amber-200 transition-colors disabled:opacity-50 font-semibold text-sm"
               >
                 <Undo2 className="w-4 h-4" />
                 Undo Last
@@ -720,38 +720,38 @@ export function LegoBuilder() {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="flex-1 bg-white rounded-2xl shadow-xl border border-gray-200 p-5"
+            className="flex-1 bg-white rounded-2xl shadow-xl border border-amber-200 p-5"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <div className="flex items-center gap-3">
-                <h3 className="font-bold text-gray-800">Build Area</h3>
-                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full font-medium">
+                <h3 className="font-bold text-amber-900">Build Area</h3>
+                <span className="text-sm text-amber-700 bg-amber-100 px-3 py-1 rounded-full font-medium">
                   {bricks.length} bricks
                 </span>
               </div>
 
               {selectedBrick && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 mr-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm text-amber-700 mr-2">
                     Selected: {selectedBrick.size} {selectedBrick.color}
                   </span>
                   <button
                     onClick={() => setShowColorPicker(true)}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-semibold hover:bg-blue-600 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 transition-colors"
                   >
                     <Palette className="w-4 h-4" />
-                    Change Color
+                    Color
                   </button>
                   <button
                     onClick={deleteSelectedBrick}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete
                   </button>
                   <button
                     onClick={() => { setSelectedBrickId(null); setShowColorPicker(false); }}
-                    className="p-2 bg-gray-200 rounded-xl hover:bg-gray-300 transition-colors"
+                    className="p-1.5 bg-amber-200 rounded-xl hover:bg-amber-300 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -762,9 +762,9 @@ export function LegoBuilder() {
             {/* 3D Canvas with drag/drop wrapper */}
             <div
               className={`relative rounded-2xl overflow-hidden transition-all ${
-                isDragOver ? 'ring-4 ring-blue-500' : ''
+                isDragOver ? 'ring-4 ring-amber-500' : ''
               }`}
-              style={{ height: 500, background: 'linear-gradient(180deg, #87CEEB 0%, #98D8C8 50%, #90EE90 100%)' }}
+              style={{ height: 450, background: 'linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #D97706 100%)' }}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -802,8 +802,8 @@ export function LegoBuilder() {
 
               {/* Drag over hint */}
               {isDragOver && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-blue-500/20">
-                  <div className="bg-blue-500 text-white px-6 py-3 rounded-xl text-lg font-semibold shadow-lg">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-amber-500/20">
+                  <div className="bg-amber-600 text-white px-6 py-3 rounded-xl text-lg font-semibold shadow-lg">
                     Release to prepare placement
                   </div>
                 </div>
@@ -812,8 +812,8 @@ export function LegoBuilder() {
               {/* Pending placement hint */}
               {pendingDrop && !isDragOver && (
                 <div className="absolute top-4 inset-x-4 flex justify-center pointer-events-none">
-                  <div className="bg-blue-500 text-white px-5 py-2.5 rounded-full text-sm font-medium shadow-lg">
-                    Click on the baseplate to place the {pendingDrop.size} {pendingDrop.color} brick
+                  <div className="bg-amber-600 text-white px-5 py-2.5 rounded-full text-sm font-medium shadow-lg">
+                    Tap on the baseplate to place the {pendingDrop.size} {pendingDrop.color} brick
                   </div>
                 </div>
               )}
@@ -821,9 +821,9 @@ export function LegoBuilder() {
               {/* Empty state */}
               {bricks.length === 0 && !pendingDrop && !isDragOver && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="text-center bg-white/90 rounded-2xl p-6 shadow-lg border border-gray-200">
-                    <p className="text-gray-800 text-lg font-semibold mb-1">Start Building!</p>
-                    <p className="text-gray-500 text-sm">Click a brick in the palette, then click on the baseplate</p>
+                  <div className="text-center bg-white/90 rounded-2xl p-6 shadow-lg border border-amber-200">
+                    <p className="text-amber-900 text-lg font-semibold mb-1">Start Building!</p>
+                    <p className="text-amber-700/70 text-sm">Select a brick in the palette, then tap on the baseplate</p>
                   </div>
                 </div>
               )}
@@ -833,10 +833,10 @@ export function LegoBuilder() {
             <div className="mt-5">
               <button
                 disabled={bricks.length === 0}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-colors disabled:opacity-50 font-bold text-lg shadow-lg"
+                className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:from-amber-600 hover:to-orange-700 transition-colors disabled:opacity-50 font-bold text-lg shadow-lg"
               >
                 <Send className="w-5 h-5" />
-                Submit to Challenge
+                Submit to Today's Challenge
               </button>
             </div>
           </motion.div>
