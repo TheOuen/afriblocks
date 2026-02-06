@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useCallback, Suspense, useEffect } from "react"
-import { Canvas } from "@react-three/fiber"
+import { useState, useCallback, Suspense, useEffect, useRef } from "react"
+import { Canvas, useThree, useFrame } from "@react-three/fiber"
 import { OrbitControls, Environment, ContactShadows } from "@react-three/drei"
 import { motion, AnimatePresence } from "framer-motion"
-import { Trash2, Undo2, Send, Palette, X, RotateCw, ChevronUp, ChevronDown, Minus, Plus } from "lucide-react"
+import { Trash2, Undo2, Send, Palette, X, RotateCw, ChevronUp, ChevronDown } from "lucide-react"
 import * as THREE from "three"
 import {
   BrickColor,
@@ -93,11 +93,11 @@ function LegoBrick3D({
   const materialProps = {
     color: colors.main,
     transparent: isPreview,
-    opacity: isPreview ? 0.5 : 1,
+    opacity: isPreview ? 0.45 : 1,
     roughness: 0.4,
     metalness: 0.05,
-    emissive: isSelected ? "#FFD700" : hovered ? "#222222" : "#000000",
-    emissiveIntensity: isSelected ? 0.4 : hovered ? 0.08 : 0,
+    emissive: isSelected ? "#FFD700" : hovered && !isPreview ? "#222222" : "#000000",
+    emissiveIntensity: isSelected ? 0.4 : hovered && !isPreview ? 0.08 : 0,
   }
 
   return (
@@ -107,23 +107,25 @@ function LegoBrick3D({
       onPointerOver={(e) => {
         if (!isPreview) { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer" }
       }}
-      onPointerOut={() => { setHovered(false); document.body.style.cursor = "default" }}
+      onPointerOut={() => { if (!isPreview) { setHovered(false); document.body.style.cursor = "default" } }}
     >
-      <mesh position={[0, bodyHeight / 2, 0]} castShadow receiveShadow>
+      <mesh position={[0, bodyHeight / 2, 0]} castShadow={!isPreview} receiveShadow={!isPreview}>
         <boxGeometry args={[brickWidth, bodyHeight, brickDepth]} />
         <meshStandardMaterial {...materialProps} />
       </mesh>
 
       {studs.map(([sx, sz], i) => (
         <group key={i} position={[sx, bodyHeight, sz]}>
-          <mesh position={[0, STUD_HEIGHT / 2, 0]} castShadow>
+          <mesh position={[0, STUD_HEIGHT / 2, 0]} castShadow={!isPreview}>
             <cylinderGeometry args={[STUD_RADIUS, STUD_RADIUS, STUD_HEIGHT, 16]} />
             <meshStandardMaterial {...materialProps} />
           </mesh>
-          <mesh position={[0, STUD_HEIGHT, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[STUD_RADIUS * 0.5, STUD_RADIUS * 0.95, 16]} />
-            <meshStandardMaterial color={colors.light} transparent={isPreview} opacity={isPreview ? 0.5 : 1} />
-          </mesh>
+          {!isPreview && (
+            <mesh position={[0, STUD_HEIGHT, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <ringGeometry args={[STUD_RADIUS * 0.5, STUD_RADIUS * 0.95, 16]} />
+              <meshStandardMaterial color={colors.light} />
+            </mesh>
+          )}
         </group>
       ))}
 
@@ -138,7 +140,7 @@ function LegoBrick3D({
 }
 
 // ============================================================================
-// BASEPLATE (optimized: fewer segments on studs)
+// BASEPLATE
 // ============================================================================
 function Baseplate({ size }: { size: number }) {
   const studs: [number, number][] = []
@@ -175,30 +177,78 @@ function Baseplate({ size }: { size: number }) {
 }
 
 // ============================================================================
-// CLICKABLE PLANE
+// GHOST PREVIEW + CLICKABLE PLANE (follows pointer on baseplate)
 // ============================================================================
-function ClickablePlane({
+function InteractivePlane({
   size,
   onPlaceClick,
+  previewColor,
+  previewSize,
+  previewRotation,
+  getStackLevel,
+  canPlace,
 }: {
   size: number
   onPlaceClick: (gridX: number, gridZ: number) => void
+  previewColor: BrickColor
+  previewSize: BrickSize
+  previewRotation: 0 | 90
+  getStackLevel: (gx: number, gz: number, s: BrickSize, r: 0 | 90) => number
+  canPlace: boolean
 }) {
+  const [hoverGrid, setHoverGrid] = useState<{ gx: number; gz: number } | null>(null)
+
+  const worldToGrid = (point: THREE.Vector3) => {
+    const gx = Math.round(point.x / STUD_PITCH + (size - 1) / 2)
+    const gz = Math.round(point.z / STUD_PITCH + (size - 1) / 2)
+    return { gx, gz }
+  }
+
+  const isValid = (gx: number, gz: number) => {
+    const { width, depth } = parseBrickSize(previewSize, previewRotation)
+    return gx >= 0 && gx + width <= size && gz >= 0 && gz + depth <= size
+  }
+
   return (
-    <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}
-      onClick={(e) => {
-        e.stopPropagation()
-        const point = e.point
-        const gridX = Math.round(point.x / STUD_PITCH + (size - 1) / 2)
-        const gridZ = Math.round(point.z / STUD_PITCH + (size - 1) / 2)
-        if (gridX >= 0 && gridX < size && gridZ >= 0 && gridZ < size) {
-          onPlaceClick(gridX, gridZ)
-        }
-      }}
-    >
-      <planeGeometry args={[size * STUD_PITCH, size * STUD_PITCH]} />
-      <meshBasicMaterial transparent opacity={0} />
-    </mesh>
+    <>
+      <mesh
+        position={[0, 0.01, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        onClick={(e) => {
+          e.stopPropagation()
+          const { gx, gz } = worldToGrid(e.point)
+          if (isValid(gx, gz)) onPlaceClick(gx, gz)
+        }}
+        onPointerMove={(e) => {
+          e.stopPropagation()
+          const { gx, gz } = worldToGrid(e.point)
+          if (isValid(gx, gz)) {
+            setHoverGrid({ gx, gz })
+          } else {
+            setHoverGrid(null)
+          }
+        }}
+        onPointerLeave={() => setHoverGrid(null)}
+      >
+        <planeGeometry args={[size * STUD_PITCH, size * STUD_PITCH]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+
+      {/* Ghost preview brick */}
+      {hoverGrid && canPlace && (
+        <LegoBrick3D
+          color={previewColor}
+          size={previewSize}
+          rotation={previewRotation}
+          position={[
+            gridToWorld(hoverGrid.gx, hoverGrid.gz, previewSize, previewRotation).x,
+            getStackLevel(hoverGrid.gx, hoverGrid.gz, previewSize, previewRotation) * BRICK_HEIGHT,
+            gridToWorld(hoverGrid.gx, hoverGrid.gz, previewSize, previewRotation).z,
+          ]}
+          isPreview
+        />
+      )}
+    </>
   )
 }
 
@@ -210,11 +260,21 @@ function Scene({
   selectedBrickId,
   onBrickClick,
   onPlaceClick,
+  previewColor,
+  previewSize,
+  previewRotation,
+  getStackLevel,
+  canPlace,
 }: {
   bricks: PlacedBrick[]
   selectedBrickId: string | null
   onBrickClick: (id: string) => void
   onPlaceClick: (gridX: number, gridZ: number) => void
+  previewColor: BrickColor
+  previewSize: BrickSize
+  previewRotation: 0 | 90
+  getStackLevel: (gx: number, gz: number, s: BrickSize, r: 0 | 90) => number
+  canPlace: boolean
 }) {
   return (
     <>
@@ -235,7 +295,15 @@ function Scene({
       <Environment preset="city" />
 
       <Baseplate size={BASEPLATE_SIZE} />
-      <ClickablePlane size={BASEPLATE_SIZE} onPlaceClick={onPlaceClick} />
+      <InteractivePlane
+        size={BASEPLATE_SIZE}
+        onPlaceClick={onPlaceClick}
+        previewColor={previewColor}
+        previewSize={previewSize}
+        previewRotation={previewRotation}
+        getStackLevel={getStackLevel}
+        canPlace={canPlace}
+      />
 
       {bricks.map((brick) => {
         const { x, z } = gridToWorld(brick.gridX, brick.gridZ, brick.size, brick.rotation)
@@ -268,7 +336,7 @@ function Scene({
 }
 
 // ============================================================================
-// ISOMETRIC BRICK PREVIEW (SVG)
+// ISOMETRIC BRICK PREVIEW (SVG for palette)
 // ============================================================================
 function IsometricBrickPreview({ color, size }: { color: BrickColor; size: BrickSize }) {
   const colors = BRICK_COLORS[color]
@@ -277,7 +345,6 @@ function IsometricBrickPreview({ color, size }: { color: BrickColor; size: Brick
   const brickW = width * 16
   const brickD = depth * 16
   const brickH = 20
-
   const isoX = (x: number, z: number) => 50 + (x - z) * 0.866
   const isoY = (x: number, y: number, z: number) => 40 - y + (x + z) * 0.5
 
@@ -330,13 +397,13 @@ function ColorPicker({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="absolute z-50 bg-white rounded-2xl shadow-2xl border border-amber-200 p-4"
+      className="absolute z-50 bg-white rounded-2xl shadow-2xl border border-neutral-200 p-4"
       style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
     >
       <div className="flex items-center justify-between mb-3">
-        <h4 className="font-bold text-amber-900">Change Color</h4>
-        <button onClick={onClose} className="p-1 hover:bg-amber-100 rounded-lg">
-          <X className="w-4 h-4 text-amber-600" />
+        <h4 className="font-bold text-neutral-900">Change Color</h4>
+        <button onClick={onClose} className="p-1 hover:bg-neutral-100 rounded-lg">
+          <X className="w-4 h-4 text-neutral-500" />
         </button>
       </div>
       <div className="grid grid-cols-4 gap-2">
@@ -375,9 +442,7 @@ export function LegoBuilder() {
   const [selectedSize, setSelectedSize] = useState<BrickSize>("2x2")
   const [rotation, setRotation] = useState<0 | 90>(0)
   const [paletteOpen, setPaletteOpen] = useState(true)
-  const [activeMode, setActiveMode] = useState<"place" | "select">("place")
 
-  // On mobile, start with palette collapsed
   useEffect(() => {
     if (isMobile) setPaletteOpen(false)
   }, [isMobile])
@@ -388,9 +453,8 @@ export function LegoBuilder() {
   }, {} as Record<BrickSize, number>)
 
   const getRemaining = (size: BrickSize) => (STARTER_PACK[size] || 0) - (usedBricks[size] || 0)
-
   const totalRemaining = AVAILABLE_SIZES.reduce((sum, s) => sum + Math.max(0, getRemaining(s)), 0)
-  const totalUsed = bricks.length
+  const canPlace = getRemaining(selectedSize) > 0
 
   const getStackLevel = useCallback((gridX: number, gridZ: number, size: BrickSize, rot: 0 | 90): number => {
     const { width, depth } = parseBrickSize(size, rot)
@@ -406,15 +470,10 @@ export function LegoBuilder() {
     return maxLevel
   }, [bricks])
 
-  const isValidPlacement = (gridX: number, gridZ: number, size: BrickSize, rot: 0 | 90): boolean => {
-    const { width, depth } = parseBrickSize(size, rot)
-    return gridX >= 0 && gridX + width <= BASEPLATE_SIZE && gridZ >= 0 && gridZ + depth <= BASEPLATE_SIZE
-  }
-
   const addBrickAtPosition = useCallback((gridX: number, gridZ: number) => {
-    if (activeMode !== "place") return
-    if (getRemaining(selectedSize) <= 0) return
-    if (!isValidPlacement(gridX, gridZ, selectedSize, rotation)) return
+    if (!canPlace) return
+    const { width, depth } = parseBrickSize(selectedSize, rotation)
+    if (gridX < 0 || gridX + width > BASEPLATE_SIZE || gridZ < 0 || gridZ + depth > BASEPLATE_SIZE) return
 
     const stackLevel = getStackLevel(gridX, gridZ, selectedSize, rotation)
     setBricks((prev) => [
@@ -429,7 +488,10 @@ export function LegoBuilder() {
         rotation,
       },
     ])
-  }, [selectedColor, selectedSize, rotation, activeMode, getStackLevel])
+    // Deselect any selected brick when placing
+    setSelectedBrickId(null)
+    setShowColorPicker(false)
+  }, [selectedColor, selectedSize, rotation, canPlace, getStackLevel])
 
   const handleBrickClick = (id: string) => {
     if (selectedBrickId === id) {
@@ -475,31 +537,30 @@ export function LegoBuilder() {
   }, [selectedBrickId])
 
   return (
-    <section id="builder" className="py-10 md:py-16 bg-gradient-to-b from-amber-50 to-white">
+    <section id="builder" className="py-10 md:py-16 bg-gradient-to-b from-amber-50/80 to-white">
       <div className="container-custom">
-        {/* Section header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl md:text-4xl font-black text-amber-900 mb-2">
+          <h2 className="text-2xl md:text-4xl font-black text-neutral-900 mb-2">
             Build Your Creation
           </h2>
-          <p className="text-amber-700/60 text-sm md:text-base max-w-md mx-auto">
-            Pick a color and brick, tap the baseplate to place. {!isMobile && "Press R to rotate, Ctrl+Z to undo."}
+          <p className="text-neutral-500 text-sm md:text-base max-w-md mx-auto">
+            Pick a color and size, then click the baseplate to place bricks.
+            {!isMobile && " Press R to rotate, Ctrl+Z to undo."}
           </p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
           {/* ============ PALETTE PANEL ============ */}
           <div className={`lg:w-72 ${isMobile ? "order-2" : ""}`}>
-            {/* Mobile toggle */}
             {isMobile && (
               <button
                 onClick={() => setPaletteOpen(!paletteOpen)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl shadow border border-amber-200 mb-2"
+                className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl shadow-md border border-neutral-200 mb-2"
               >
-                <span className="font-semibold text-amber-900 text-sm">Brick Palette</span>
+                <span className="font-semibold text-neutral-900 text-sm">Brick Palette</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-amber-600">{totalRemaining} left</span>
-                  {paletteOpen ? <ChevronUp className="w-4 h-4 text-amber-600" /> : <ChevronDown className="w-4 h-4 text-amber-600" />}
+                  <span className="text-xs text-neutral-500">{totalRemaining} left</span>
+                  {paletteOpen ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
                 </div>
               </button>
             )}
@@ -511,19 +572,19 @@ export function LegoBuilder() {
                   animate={{ height: "auto", opacity: 1 }}
                   exit={isMobile ? { height: 0, opacity: 0 } : undefined}
                   transition={{ duration: 0.2 }}
-                  className="bg-white rounded-2xl shadow-lg border border-amber-200 overflow-hidden"
+                  className="bg-white rounded-2xl shadow-md border border-neutral-200 overflow-hidden"
                 >
                   <div className="p-4 md:p-5">
                     {!isMobile && (
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-bold text-amber-900">Brick Palette</h3>
-                        <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">{totalRemaining} left</span>
+                        <h3 className="font-bold text-neutral-900">Brick Palette</h3>
+                        <span className="text-xs text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-full">{totalRemaining} left</span>
                       </div>
                     )}
 
                     {/* Color selector */}
                     <div className="mb-4">
-                      <label className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-2 block">
+                      <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 block">
                         Color
                       </label>
                       <div className="flex flex-wrap gap-1.5">
@@ -536,7 +597,7 @@ export function LegoBuilder() {
                               onClick={() => setSelectedColor(color)}
                               className={`w-8 h-8 rounded-lg transition-all ${
                                 selectedColor === color
-                                  ? "ring-2 ring-offset-1 ring-amber-500 scale-110"
+                                  ? "ring-2 ring-offset-2 ring-neutral-900 scale-110"
                                   : "hover:scale-105"
                               }`}
                               style={{
@@ -553,15 +614,15 @@ export function LegoBuilder() {
                     {/* Size selector */}
                     <div className="mb-4">
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-semibold text-amber-700 uppercase tracking-wider">
+                        <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                           Size
                         </label>
                         <button
                           onClick={() => setRotation((r) => (r === 0 ? 90 : 0))}
-                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors ${
+                          className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg transition-colors font-medium ${
                             rotation === 90
-                              ? "bg-amber-500 text-white"
-                              : "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                              ? "bg-neutral-900 text-white"
+                              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                           }`}
                           title="Rotate brick (R)"
                         >
@@ -576,23 +637,23 @@ export function LegoBuilder() {
                           return (
                             <button
                               key={size}
-                              onClick={() => { setSelectedSize(size); setActiveMode("place") }}
+                              onClick={() => setSelectedSize(size)}
                               disabled={remaining <= 0}
                               className={`relative rounded-xl p-2 transition-all ${
                                 isActive
-                                  ? "bg-amber-500 shadow-md ring-2 ring-amber-300"
+                                  ? "bg-neutral-900 shadow-md"
                                   : remaining > 0
-                                  ? "bg-white border border-amber-200 hover:border-amber-400"
-                                  : "bg-amber-50 border border-amber-100 opacity-40 cursor-not-allowed"
+                                  ? "bg-white border border-neutral-200 hover:border-neutral-400"
+                                  : "bg-neutral-50 border border-neutral-100 opacity-40 cursor-not-allowed"
                               }`}
                             >
                               <div className="w-12 h-9 mx-auto">
-                                <IsometricBrickPreview color={isActive ? selectedColor : selectedColor} size={size} />
+                                <IsometricBrickPreview color={selectedColor} size={size} />
                               </div>
                               <div className="text-center mt-0.5">
-                                <span className={`text-xs font-bold ${isActive ? "text-white" : "text-amber-900"}`}>{size}</span>
+                                <span className={`text-xs font-bold ${isActive ? "text-white" : "text-neutral-900"}`}>{size}</span>
                                 <span className={`text-xs ml-1 ${
-                                  isActive ? "text-amber-100" : remaining > 3 ? "text-green-600" : remaining > 0 ? "text-orange-600" : "text-red-600"
+                                  isActive ? "text-neutral-300" : remaining > 3 ? "text-green-600" : remaining > 0 ? "text-orange-600" : "text-red-500"
                                 }`}>
                                   ({remaining})
                                 </span>
@@ -608,7 +669,7 @@ export function LegoBuilder() {
                       <button
                         onClick={() => setBricks((prev) => prev.slice(0, -1))}
                         disabled={bricks.length === 0}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-amber-100 text-amber-700 rounded-xl hover:bg-amber-200 transition-colors disabled:opacity-40 font-semibold text-sm"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-neutral-100 text-neutral-700 rounded-xl hover:bg-neutral-200 transition-colors disabled:opacity-40 font-semibold text-sm"
                       >
                         <Undo2 className="w-3.5 h-3.5" />
                         Undo
@@ -616,7 +677,7 @@ export function LegoBuilder() {
                       <button
                         onClick={() => { setBricks([]); setSelectedBrickId(null) }}
                         disabled={bricks.length === 0}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors disabled:opacity-40 font-semibold text-sm"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors disabled:opacity-40 font-semibold text-sm"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         Clear
@@ -630,19 +691,19 @@ export function LegoBuilder() {
 
           {/* ============ 3D BUILD AREA ============ */}
           <div className={`flex-1 ${isMobile ? "order-1" : ""}`}>
-            <div className="bg-white rounded-2xl shadow-lg border border-amber-200 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-md border border-neutral-200 overflow-hidden">
               {/* Toolbar */}
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-amber-100 bg-amber-50/50">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-100">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-amber-900 text-sm">Build Area</h3>
-                  <span className="text-xs text-amber-600 bg-white px-2 py-0.5 rounded-full border border-amber-200">
-                    {totalUsed} placed
+                  <h3 className="font-bold text-neutral-900 text-sm">Build Area</h3>
+                  <span className="text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full">
+                    {bricks.length} placed
                   </span>
                 </div>
 
                 {selectedBrick && (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-amber-700 mr-1 hidden sm:inline">
+                    <span className="text-xs text-neutral-500 mr-1 hidden sm:inline">
                       {selectedBrick.size} {selectedBrick.color}
                     </span>
                     <button
@@ -661,7 +722,7 @@ export function LegoBuilder() {
                     </button>
                     <button
                       onClick={() => { setSelectedBrickId(null); setShowColorPicker(false) }}
-                      className="p-1.5 bg-amber-200 rounded-lg hover:bg-amber-300 transition-colors"
+                      className="p-1.5 bg-neutral-200 rounded-lg hover:bg-neutral-300 transition-colors"
                       title="Deselect"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -675,7 +736,7 @@ export function LegoBuilder() {
                 className="relative"
                 style={{
                   height: isMobile ? "min(55vh, 400px)" : "min(65vh, 550px)",
-                  background: "linear-gradient(180deg, #FEF3C7 0%, #FDE68A 50%, #D97706 100%)",
+                  background: "linear-gradient(180deg, #E8F4FD 0%, #D4E8F5 40%, #B8D4E8 100%)",
                 }}
               >
                 <Canvas
@@ -689,6 +750,11 @@ export function LegoBuilder() {
                       selectedBrickId={selectedBrickId}
                       onBrickClick={handleBrickClick}
                       onPlaceClick={addBrickAtPosition}
+                      previewColor={selectedColor}
+                      previewSize={selectedSize}
+                      previewRotation={rotation}
+                      getStackLevel={getStackLevel}
+                      canPlace={canPlace}
                     />
                   </Suspense>
                 </Canvas>
@@ -708,27 +774,28 @@ export function LegoBuilder() {
                 </AnimatePresence>
 
                 {/* Active brick indicator */}
-                {activeMode === "place" && !selectedBrickId && (
-                  <div className="absolute top-3 left-3 flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-amber-200">
+                {!selectedBrickId && (
+                  <div className="absolute top-3 left-3 flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow border border-neutral-200">
                     <div
                       className="w-4 h-4 rounded"
                       style={{
                         background: `linear-gradient(135deg, ${BRICK_COLORS[selectedColor].light}, ${BRICK_COLORS[selectedColor].main})`,
                       }}
                     />
-                    <span className="text-xs font-medium text-amber-900">
-                      {selectedSize} {rotation === 90 ? "(rotated)" : ""}
+                    <span className="text-xs font-medium text-neutral-700">
+                      {selectedSize}{rotation === 90 ? " rotated" : ""}
                     </span>
+                    {!canPlace && <span className="text-xs font-medium text-red-500">out!</span>}
                   </div>
                 )}
 
                 {/* Empty state */}
                 {bricks.length === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="text-center bg-white/85 backdrop-blur-sm rounded-2xl p-5 shadow border border-amber-200">
-                      <p className="text-amber-900 font-semibold mb-0.5">Tap the baseplate to start building</p>
-                      <p className="text-amber-700/60 text-sm">
-                        {isMobile ? "Pinch to zoom, drag to rotate" : "Drag to rotate, scroll to zoom, R to rotate brick"}
+                    <div className="text-center bg-white/90 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-neutral-200">
+                      <p className="text-neutral-900 font-semibold mb-0.5">Click the green baseplate to start</p>
+                      <p className="text-neutral-500 text-sm">
+                        {isMobile ? "Pinch to zoom, drag to rotate view" : "Hover to preview, click to place. Drag to orbit."}
                       </p>
                     </div>
                   </div>
@@ -736,7 +803,7 @@ export function LegoBuilder() {
               </div>
 
               {/* Submit bar */}
-              <div className="p-3 md:p-4 border-t border-amber-100 bg-amber-50/50">
+              <div className="p-3 md:p-4 border-t border-neutral-100">
                 <button
                   disabled={bricks.length === 0}
                   className="w-full flex items-center justify-center gap-2 py-3 md:py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:from-amber-600 hover:to-orange-700 transition-colors disabled:opacity-40 font-bold text-sm md:text-base shadow-lg"
